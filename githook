@@ -59,11 +59,14 @@ def hook_trigger(payload):
     repository_url = repository.get('url')
 
     path = OPTIONS.get('--scripts')
-    script = '%s/%s' % (path, branch)
+    script = '%s/%s/%s' % (path, repository_name, branch)
     if not os.path.isfile(script):
-        return logging.warning('Branch %s does not have any trigger script' % branch)
+        params = (repository_name, branch)
+        logging.warning('Branch %s/%s does not have any trigger script' % params)
+        return
 
     logging.info('Executing trigger script for branch %s' % branch)
+    # TODO: Execute script
 
 
 class HookHandler(SimpleHTTPRequestHandler):
