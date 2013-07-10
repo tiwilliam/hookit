@@ -1,7 +1,7 @@
 # Bind GitHub WebHooks to actions
 
     Usage:
-      githook [--scripts=<dir>] [--listen=<address>] [--port=<port>]
+      githubhooks [--scripts=<dir>] [--listen=<address>] [--port=<port>]
     
     Options:
       -v --version        Show version
@@ -11,7 +11,7 @@
 
 ## Execute scripts in any language
 
-githook will on receivied webhook execute script located in `<scripts>/<repository>/<branch>`. The script will run with arguments containing repository, branch and commit hash. An example script may look like:
+githubhooks will on receivied webhook execute script located in `<scripts>/<repository>/<branch>`. The script will run with arguments containing repository, branch and commit hash. An example script may look like:
 
     #!/usr/bin/env python
 
