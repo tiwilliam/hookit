@@ -1,7 +1,7 @@
 # Bind GitHub WebHooks to actions
 
     Usage:
-      githubhooks [--scripts=<dir>] [--listen=<address>] [--port=<port>]
+      hookit [--scripts=<dir>] [--listen=<address>] [--port=<port>]
     
     Options:
       -v --version        Show version
@@ -11,7 +11,7 @@
 
 ## Execute scripts in any language
 
-githubhooks will on receivied webhook execute script located in `<scripts>/<repository>/<branch>`. The script will run with arguments containing repository, branch and commit hash. An example script may look like:
+hookit will on receivied webhook execute script located in `<scripts>/<repository>/<branch>`. The script will run with arguments containing repository, branch and commit hash. An example script may look like:
 
     #!/usr/bin/env python
 
@@ -23,3 +23,8 @@ githubhooks will on receivied webhook execute script located in `<scripts>/<repo
 
     message = 'You have changes in the %s branch of %s' % (branch, repo)
     call(['/usr/bin/say', message])
+
+## Security
+
+The server will only accept requests from GitHub's trusted servers.
+Whitelisted networks: 192.30.252.0/22 and 204.232.175.64/27
