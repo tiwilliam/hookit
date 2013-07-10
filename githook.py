@@ -1,29 +1,30 @@
-#!/usr/bin/env python
 # -*- coding: utf8 -*-
+
 """
 Usage:
   githook [--scripts=<dir>] [--listen=<address>] [--port=<port>]
 
-Options:
+args:
   -v --version        Show version
   --scripts=<dir>     Where to look for hook scripts [default: .]
   --listen=<address>  Server address to listen on [default: 0.0.0.0]
   --port=<port>       Server port to listen on [default: 8000]
 """
 
-import sys
 import json
-import os.path
 import struct
 import socket
 import logging
-from docopt import docopt
+import os.path
 from cgi import parse_qs
-import BaseHTTPServer as Server
+
+from docopt import docopt
+
+from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 
-OPTIONS = docopt(__doc__, version=0.1)
+args = docopt(__doc__, version=0.1)
 
 WHITELIST = [
     ('192.30.252.0', 22),
@@ -50,35 +51,15 @@ def in_whitelist(client):
     return False
 
 
-def hook_trigger(payload):
-    ref = payload.get('ref')
-    branch = ref.split('/')[-1]
-    after = payload.get('after')
-    repository = payload.get('repository')
-    repository_name = repository.get('name')
-    repository_url = repository.get('url')
-
-    path = OPTIONS.get('--scripts')
-    script = '%s/%s/%s' % (path, repository_name, branch)
-    if not os.path.isfile(script):
-        params = (repository_name, branch)
-        logging.warning('Branch %s/%s does not have any trigger script' % params)
-        return
-
-    logging.info('Executing trigger script for branch %s' % branch)
-    # TODO: Execute script
-
-
 class HookHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(403)
-        self.end_headers()
+        self.send_forbidden()
 
     def do_POST(self):
         # Reject all requests from non-Github IPs
         if not in_whitelist(self.client_address[0]):
-            self.send_response(403)
-            return self.end_headers()
+            self.send_forbidden()
+            return
 
         # Read POST data
         length = int(self.headers.getheader('Content-Length'))
@@ -87,15 +68,52 @@ class HookHandler(SimpleHTTPRequestHandler):
         # Parse POST data and get payload
         payload = parse_qs(data).get('payload', None)
         if not payload:
-            self.send_response(403)
-            return self.end_headers()
+            self.send_forbidden()
+            return
 
         payload = json.loads(payload[0])
         hook_trigger(payload)
 
+        self.send_ok()
+
+    def send_ok(self):
         self.send_response(200)
         self.end_headers()
 
+    def send_forbidden(self):
+        self.send_response(403)
+        self.end_headers()
 
-http = Server.HTTPServer((OPTIONS.get('--listen'), int(OPTIONS.get('--port'))), HookHandler)
-http.serve_forever()
+
+def hook_trigger(payload):
+    ref = payload['ref']
+    repo = payload['repository']['name']
+    branch = ref.split('/')[-1]
+
+    jail = os.path.abspath(args['--scripts'])
+    trigger = os.path.abspath('%s/%s' % (repo, branch))
+
+    # Check if absolute trigger path resides in jail directory
+    if not os.path.commonprefix([trigger, jail]).startswith(jail):
+        logging.warning('%s: Tried to execute outside jail' % trigger)
+        return
+
+    # No action
+    if not os.path.isfile(trigger):
+        logging.info('%s: No such trigger' % trigger)
+        return
+
+    logging.info('%s: Executing trigger' % trigger)
+    # TODO: Execute script
+
+
+def run():
+    host = args['--listen']
+    port = int(args['--port'])
+
+    http = HTTPServer((host, port), HookHandler)
+    http.serve_forever()
+
+
+if __name__ == '__main__':
+    run()
