@@ -4,7 +4,7 @@ setup(
     name='githook',
     version='0.1',
     packages=['githook'],
-    license='BSD',
+    license='MIT License',
     keywords='git github webhook webhooks',
     description='Bind GitHub WebHooks to actions',
     install_requires=['docopt'],
