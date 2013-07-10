@@ -3,17 +3,17 @@
 from setuptools import setup
 
 setup(
-    name='githubhook',
+    name='hookit',
     version='0.5',
-    packages=['githubhook'],
+    packages=['hookit'],
     license='MIT License',
     keywords='git github webhook webhooks',
     description='Bind GitHub WebHooks to actions',
     install_requires=['docopt'],
     author='William Tisäter',
     author_email='william@defunct.cc',
-    url='https://github.com/tiwilliam/githubhook',
+    url='https://github.com/tiwilliam/hookit',
     entry_points={
-        'console_scripts': ['githubhook = githubhook:run'],
+        'console_scripts': ['hookit = hookit:run'],
     }
 )

@@ -2,7 +2,7 @@
 
 """
 Usage:
-  githubhook [--scripts=<dir>] [--listen=<address>] [--port=<port>]
+  hookit [--scripts=<dir>] [--listen=<address>] [--port=<port>]
 
 args:
   -v --version        Show version
