@@ -11,6 +11,7 @@ args:
   --port=<port>       Server port to listen on [default: 8000]
 """
 
+import sys
 import json
 import struct
 import socket
@@ -109,10 +110,28 @@ def hook_trigger(payload):
 
 def run():
     host = args['--listen']
-    port = int(args['--port'])
 
-    http = HTTPServer((host, port), HookHandler)
-    http.serve_forever()
+    try:
+        port = int(args['--port'])
+    except ValueError:
+        logging.error('Binding port must be integer')
+        sys.exit(1)
+
+    try:
+        http = HTTPServer((host, port), HookHandler)
+        http.serve_forever()
+    except (socket.gaierror, socket.error) as e:
+        startup_error(e.strerror.capitalize())
+    except OverflowError as e:
+        startup_error('Port must be in interval 0-65535')
+    except KeyboardInterrupt:
+        print('')
+        sys.exit(0)
+
+
+def startup_error(message):
+    logging.error('Could not start server: %s' % message)
+    sys.exit(1)
 
 
 if __name__ == '__main__':
