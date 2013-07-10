@@ -27,4 +27,7 @@ hookit will on receivied webhook execute script located in `<scripts>/<repositor
 ## Security
 
 The server will only accept requests from GitHub's trusted servers.
-Whitelisted networks: 192.30.252.0/22 and 204.232.175.64/27
+
+Whitelisted networks:
+* 192.30.252.0/22
+* 204.232.175.64/27
