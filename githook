@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+"""
+Usage:
+  githook [--scripts=<dir>] [--listen=<address>] [--port=<port>]
+
+Options:
+  -v --version        Show version
+  --scripts=<dir>     Where to look for hook scripts [default: .]
+  --listen=<address>  Server address to listen on [default: 0.0.0.0]
+  --port=<port>       Server port to listen on [default: 8000]
+"""
+
+import sys
+import json
+import os.path
+import struct
+import socket
+import logging
+from docopt import docopt
+from cgi import parse_qs
+import BaseHTTPServer as Server
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+
+
+OPTIONS = docopt(__doc__, version=0.1)
+
+WHITELIST = [
+	('192.30.252.0', 22),
+	('204.232.175.64', 27)
+]
+
+
+def to_num(ip):
+	return struct.unpack('<L', socket.inet_aton(ip))[0]
+
+
+def to_netmask(ip, bits):
+	return to_num(ip) & ((2L << bits - 1) - 1)
+
+
+def in_network(ip, net):
+	return to_num(ip) & net == net
+
+
+def in_whitelist(client):
+	for ip, bit in WHITELIST:
+		if in_network(client, to_netmask(ip, bit)):
+			return True
+	return False
+
+
+def hook_trigger(payload):
+	ref = payload.get('ref')
+	branch = ref.split('/')[-1]
+	after = payload.get('after')
+	repository = payload.get('repository')
+	repository_name = repository.get('name')
+	repository_url = repository.get('url')
+
+	path = OPTIONS.get('--scripts')
+	script = '%s/%s' % (path, branch)
+	if not os.path.isfile(script):
+		return logging.warning('Branch %s does not have any trigger script' % branch)
+
+	logging.info('Executing trigger script for branch %s' % branch)
+
+
+class HookHandler(SimpleHTTPRequestHandler):
+	def do_GET(self):
+		self.send_response(403)
+		self.end_headers()
+
+	def do_POST(self):
+		# Reject all requests from non-Github IPs
+		if not in_whitelist(self.client_address[0]):
+			self.send_response(403)
+			return self.end_headers()
+
+		# Read POST data
+		length = int(self.headers.getheader('Content-Length'))
+		data = self.rfile.read(length)
+
+		# Parse POST data and get payload
+		payload = parse_qs(data).get('payload', None)
+		if not payload:
+			self.send_response(403)
+			return self.end_headers()
+
+		payload = json.loads(payload[0])
+		hook_trigger(payload)
+
+		self.send_response(200)
+		self.end_headers()
+
+
+http = Server.HTTPServer((OPTIONS.get('--listen'), int(OPTIONS.get('--port'))), HookHandler)
+http.serve_forever()
