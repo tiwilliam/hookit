@@ -25,6 +25,12 @@ The script will run with arguments containing repository, branch and commit hash
     message = 'You have changes in the %s branch of %s' % (branch, repo)
     call(['/usr/bin/say', message])
 
+## Installation
+
+This package is availiable on Python Package Index
+
+    pip install hookit
+
 ## Security
 
 The server will only accept requests from GitHub's trusted servers and run scripts from an jailed directory.
