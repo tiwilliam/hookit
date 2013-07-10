@@ -18,6 +18,7 @@ import socket
 import logging
 import os.path
 from cgi import parse_qs
+from subprocess import call
 
 from docopt import docopt
 
@@ -88,6 +89,7 @@ class HookHandler(SimpleHTTPRequestHandler):
 
 def hook_trigger(payload):
     ref = payload['ref']
+    after = payload['after']
     repo = payload['repository']['name']
     branch = ref.split('/')[-1]
 
@@ -105,7 +107,7 @@ def hook_trigger(payload):
         return
 
     logging.info('%s: Executing trigger' % trigger)
-    # TODO: Execute script
+    call([trigger, branch, repo, after])
 
 
 def run():

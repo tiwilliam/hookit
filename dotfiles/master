@@ -1,3 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-echo "Hej"
+import sys
+from subprocess import call
+
+
+def say(message):
+    call(['/usr/bin/say', message])
+
+
+branch = sys.argv[1]
+repo = sys.argv[2]
+after = sys.argv[3]
+
+say('You have changes in the %s branch of %s' % (branch, repo))
+say('The new commit hash is %s' % after)
