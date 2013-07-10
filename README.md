@@ -11,7 +11,8 @@
 
 ## Execute scripts in any language
 
-hookit will on receivied webhook execute script located in `<scripts>/<repository>/<branch>`. The script will run with arguments containing repository, branch and commit hash. An example script may look like:
+On webhook the server will try to execute a script located at `<scripts>/<repository>/<branch>`.
+The script will run with arguments containing repository, branch and commit hash. An example script may look like:
 
     #!/usr/bin/env python
 
