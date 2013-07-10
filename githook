@@ -26,72 +26,72 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 OPTIONS = docopt(__doc__, version=0.1)
 
 WHITELIST = [
-	('192.30.252.0', 22),
-	('204.232.175.64', 27)
+    ('192.30.252.0', 22),
+    ('204.232.175.64', 27)
 ]
 
 
 def to_num(ip):
-	return struct.unpack('<L', socket.inet_aton(ip))[0]
+    return struct.unpack('<L', socket.inet_aton(ip))[0]
 
 
 def to_netmask(ip, bits):
-	return to_num(ip) & ((2L << bits - 1) - 1)
+    return to_num(ip) & ((2L << bits - 1) - 1)
 
 
 def in_network(ip, net):
-	return to_num(ip) & net == net
+    return to_num(ip) & net == net
 
 
 def in_whitelist(client):
-	for ip, bit in WHITELIST:
-		if in_network(client, to_netmask(ip, bit)):
-			return True
-	return False
+    for ip, bit in WHITELIST:
+        if in_network(client, to_netmask(ip, bit)):
+            return True
+    return False
 
 
 def hook_trigger(payload):
-	ref = payload.get('ref')
-	branch = ref.split('/')[-1]
-	after = payload.get('after')
-	repository = payload.get('repository')
-	repository_name = repository.get('name')
-	repository_url = repository.get('url')
+    ref = payload.get('ref')
+    branch = ref.split('/')[-1]
+    after = payload.get('after')
+    repository = payload.get('repository')
+    repository_name = repository.get('name')
+    repository_url = repository.get('url')
 
-	path = OPTIONS.get('--scripts')
-	script = '%s/%s' % (path, branch)
-	if not os.path.isfile(script):
-		return logging.warning('Branch %s does not have any trigger script' % branch)
+    path = OPTIONS.get('--scripts')
+    script = '%s/%s' % (path, branch)
+    if not os.path.isfile(script):
+        return logging.warning('Branch %s does not have any trigger script' % branch)
 
-	logging.info('Executing trigger script for branch %s' % branch)
+    logging.info('Executing trigger script for branch %s' % branch)
 
 
 class HookHandler(SimpleHTTPRequestHandler):
-	def do_GET(self):
-		self.send_response(403)
-		self.end_headers()
+    def do_GET(self):
+        self.send_response(403)
+        self.end_headers()
 
-	def do_POST(self):
-		# Reject all requests from non-Github IPs
-		if not in_whitelist(self.client_address[0]):
-			self.send_response(403)
-			return self.end_headers()
+    def do_POST(self):
+        # Reject all requests from non-Github IPs
+        if not in_whitelist(self.client_address[0]):
+            self.send_response(403)
+            return self.end_headers()
 
-		# Read POST data
-		length = int(self.headers.getheader('Content-Length'))
-		data = self.rfile.read(length)
+        # Read POST data
+        length = int(self.headers.getheader('Content-Length'))
+        data = self.rfile.read(length)
 
-		# Parse POST data and get payload
-		payload = parse_qs(data).get('payload', None)
-		if not payload:
-			self.send_response(403)
-			return self.end_headers()
+        # Parse POST data and get payload
+        payload = parse_qs(data).get('payload', None)
+        if not payload:
+            self.send_response(403)
+            return self.end_headers()
 
-		payload = json.loads(payload[0])
-		hook_trigger(payload)
+        payload = json.loads(payload[0])
+        hook_trigger(payload)
 
-		self.send_response(200)
-		self.end_headers()
+        self.send_response(200)
+        self.end_headers()
 
 
 http = Server.HTTPServer((OPTIONS.get('--listen'), int(OPTIONS.get('--port'))), HookHandler)
