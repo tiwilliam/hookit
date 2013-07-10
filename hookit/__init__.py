@@ -94,7 +94,7 @@ def hook_trigger(payload):
     branch = ref.split('/')[-1]
 
     jail = os.path.abspath(args['--scripts'])
-    trigger = os.path.abspath('%s/%s' % (repo, branch))
+    trigger = os.path.abspath('%s/%s/%s' % (jail, repo, branch))
 
     # Check if absolute trigger path resides in jail directory
     if not os.path.commonprefix([trigger, jail]).startswith(jail):
