@@ -13,14 +13,13 @@ args:
 
 import sys
 import json
-import struct
 import socket
 import logging
 import os.path
-from cgi import parse_qs
 from subprocess import call
 
 from docopt import docopt
+from ipaddress import ip_address, ip_network
 
 from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
@@ -33,23 +32,12 @@ WHITELIST = [
     ('204.232.175.64', 27)
 ]
 
-
-def to_num(ip):
-    return struct.unpack('<L', socket.inet_aton(ip))[0]
-
-
-def to_netmask(ip, bits):
-    return to_num(ip) & ((2L << bits - 1) - 1)
-
-
-def in_network(ip, net):
-    return to_num(ip) & net == net
 args = docopt(__doc__, version=VERSION)
 
 
 def in_whitelist(client):
-    for ip, bit in WHITELIST:
-        if in_network(client, to_netmask(ip, bit)):
+    for ip in WHITELIST:
+        if ip_address(client) in ip_network(ip):
             return True
     return False
 
@@ -76,7 +64,6 @@ class HookHandler(SimpleHTTPRequestHandler):
 
         payload = json.loads(payload[0])
         hook_trigger(payload)
-
         self.send_ok()
 
     def send_ok(self):
