@@ -59,12 +59,11 @@ class HookHandler(SimpleHTTPRequestHandler):
         data = self.rfile.read(length)
 
         # Parse POST data and get payload
-        payload = parse_qs(data).get('payload', None)
-        if not payload:
+        payload = json.loads(str(data))
+        if not (payload and payload.get('ref')):
             self.send_forbidden()
             return
 
-        payload = json.loads(payload[0])
         hook_trigger(payload)
         self.send_ok()
 
