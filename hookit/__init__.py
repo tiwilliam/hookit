@@ -26,7 +26,7 @@ from BaseHTTPServer import HTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 
-args = docopt(__doc__, version=0.1)
+VERSION = '0.8.0'
 
 WHITELIST = [
     ('192.30.252.0', 22),
@@ -44,6 +44,7 @@ def to_netmask(ip, bits):
 
 def in_network(ip, net):
     return to_num(ip) & net == net
+args = docopt(__doc__, version=VERSION)
 
 
 def in_whitelist(client):
