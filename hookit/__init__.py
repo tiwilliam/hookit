@@ -37,9 +37,9 @@ WHITELIST = GitHub().meta().get('hooks', [])
 args = docopt(__doc__, version=VERSION)
 
 
-def in_whitelist(client):
+def in_whitelist(client_ip):
     for ip in WHITELIST:
-        if ip_address(client) in ip_network(ip):
+        if ip_address(u'%s' % client_ip) in ip_network(ip):
             return True
     return False
 
@@ -55,13 +55,19 @@ class HookHandler(SimpleHTTPRequestHandler):
             return
 
         # Read POST data
-        length = int(self.headers.getheader('Content-Length'))
-        data = self.rfile.read(length)
+        length = int(self.headers.get('Content-Length'))
+        data = self.rfile.read(length).decode("utf-8")
 
         # Parse POST data and get payload
-        payload = json.loads(str(data))
-        if not (payload and payload.get('ref')):
+        try:
+            payload = json.loads(data)
+        except ValueError as e:
+            logging.error('%s: %s' % (e, data))
             self.send_forbidden()
+            return
+
+        if 'zen' in payload and 'ref' not in payload:
+            self.send_ok()
             return
 
         hook_trigger(payload)
