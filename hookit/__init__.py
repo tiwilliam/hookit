@@ -22,8 +22,12 @@ from docopt import docopt
 from github3 import GitHub
 from ipaddress import ip_address, ip_network
 
-from BaseHTTPServer import HTTPServer
-from SimpleHTTPServer import SimpleHTTPRequestHandler
+try:
+    from BaseHTTPServer import HTTPServer
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+except ImportError:
+    from http.server import HTTPServer
+    from http.server import SimpleHTTPRequestHandler
 
 
 VERSION = '0.8.0'
