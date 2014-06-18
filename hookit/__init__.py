@@ -5,7 +5,6 @@ Usage:
   hookit [--scripts=<dir>] [--listen=<address>] [--port=<port>]
 
 args:
-  -v --version        Show version
   --scripts=<dir>     Where to look for hook scripts [default: .]
   --listen=<address>  Server address to listen on [default: 0.0.0.0]
   --port=<port>       Server port to listen on [default: 8000]
@@ -30,11 +29,9 @@ except ImportError:
     from http.server import SimpleHTTPRequestHandler
 
 
-VERSION = '0.8.0'
-
 WHITELIST = GitHub().meta().get('hooks', [])
 
-args = docopt(__doc__, version=VERSION)
+args = docopt(__doc__)
 
 
 def in_whitelist(client_ip):
