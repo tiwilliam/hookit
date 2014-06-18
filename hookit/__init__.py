@@ -19,6 +19,7 @@ import os.path
 from subprocess import call
 
 from docopt import docopt
+from github3 import GitHub
 from ipaddress import ip_address, ip_network
 
 from BaseHTTPServer import HTTPServer
@@ -27,10 +28,7 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 VERSION = '0.8.0'
 
-WHITELIST = [
-    ('192.30.252.0', 22),
-    ('204.232.175.64', 27)
-]
+WHITELIST = GitHub().meta().get('hooks', [])
 
 args = docopt(__doc__, version=VERSION)
 
