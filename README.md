@@ -35,6 +35,4 @@ This package is availiable on Python Package Index
 
 The server will only accept requests from GitHub's trusted servers and run scripts from an jailed directory.
 
-Whitelisted networks:
-* 192.30.252.0/22
-* 204.232.175.64/27
+GitHub's trusted servers will be updated on start using their [meta endpoint](https://api.github.com/meta).
