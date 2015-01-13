@@ -28,11 +28,13 @@ except ImportError:
     from http.server import HTTPServer
     from http.server import SimpleHTTPRequestHandler
 
+logger = logging.getLogger('hookit')
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
-WHITELIST = GitHub().meta().get('hooks', [])
 VERSION = '0.8.0'
 
-args = docopt(__doc__)
+WHITELIST = GitHub().meta().get('hooks', [])
 
 
 def in_whitelist(client_ip):
@@ -60,7 +62,7 @@ class HookHandler(SimpleHTTPRequestHandler):
         try:
             payload = json.loads(data)
         except ValueError as e:
-            logging.error('%s: %s' % (e, data))
+            logger.error('%s: %s' % (e, data))
             self.send_forbidden()
             return
 
@@ -81,36 +83,51 @@ class HookHandler(SimpleHTTPRequestHandler):
 
 
 def hook_trigger(payload):
-    ref = payload['ref']
-    after = payload['after']
-    repo = payload['repository']['name']
-    branch = ref.split('/')[-1]
+    owner = payload['repository']['owner']['name']
+    repository = payload['repository']['name']
+    branch = payload['ref'].split('/')[-1]
+    commit = payload['after']
 
-    jail = os.path.abspath(args['--scripts'])
-    trigger = os.path.abspath('%s/%s/%s' % (jail, repo, branch))
+    jail = os.path.abspath(docopt(__doc__)['--scripts'])
 
-    # Check if absolute trigger path resides in jail directory
-    if not os.path.commonprefix([trigger, jail]).startswith(jail):
-        logging.warning('%s: Tried to execute outside jail' % trigger)
-        return
+    triggers = [
+        os.path.abspath('%s/%s' % (jail, owner)),
+        os.path.abspath('%s/%s/%s' % (jail, owner, repository)),
+        os.path.abspath('%s/%s/%s/%s' % (jail, owner, repository, branch)),
+    ]
 
-    # No action
-    if not os.path.isfile(trigger):
-        logging.info('%s: No such trigger' % trigger)
-        return
+    for trigger in triggers:
+        # Check if absolute trigger path resides in jail directory
+        if not os.path.commonprefix([trigger, jail]).startswith(jail):
+            logger.warning('Tried to execute script outside jail: %s' % trigger)
+            break
 
-    logging.info('%s: Executing trigger' % trigger)
-    call([trigger, branch, repo, after])
+        # No action
+        if not os.path.isfile(trigger):
+            continue
+
+        logger.debug('Executing %s' % trigger)
+        call([trigger] + [
+            '--owner=%s' % owner,
+            '--branch=%s' % branch,
+            '--repository=%s' % repository,
+            '--commit=%s' % commit,
+        ])
+        break
 
 
 def run():
+    args = docopt(__doc__)
     host = args['--listen']
 
     try:
         port = int(args['--port'])
     except ValueError:
-        logging.error('Binding port must be integer')
+        logger.error('Binding port must be integer')
         sys.exit(1)
+
+    logger.info('Starting hookit %s', VERSION)
+    logger.info('Now listening for webhooks on http://%s:%s...' % (host, port))
 
     try:
         http = HTTPServer((host, port), HookHandler)
@@ -125,9 +142,5 @@ def run():
 
 
 def startup_error(message):
-    logging.error('Could not start server: %s' % message)
+    logger.error('Could not start server: %s' % message)
     sys.exit(1)
-
-
-if __name__ == '__main__':
-    run()
