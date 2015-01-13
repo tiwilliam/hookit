@@ -30,6 +30,7 @@ except ImportError:
 
 
 WHITELIST = GitHub().meta().get('hooks', [])
+VERSION = '0.8.0'
 
 args = docopt(__doc__)
 

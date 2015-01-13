@@ -1,10 +1,11 @@
 # -*- coding: utf8 -*-
 
+from hookit import VERSION
 from setuptools import setup
 
 setup(
     name='hookit',
-    version='0.8.0',
+    version=VERSION,
     packages=['hookit'],
     license='MIT License',
     keywords='git github webhook webhooks',
