@@ -32,7 +32,7 @@ logger = logging.getLogger('hookit')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-VERSION = '0.8.0'
+VERSION = '0.9.0'
 
 WHITELIST = GitHub().meta().get('hooks', [])
 
