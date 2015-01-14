@@ -34,6 +34,16 @@ It's also possible to listen for all push events in an organisation
 or repository. Just place your hook script at the level you are
 interested of (eg. `.../<owner>/<repository>` or `.../<owner>`).
 
+## Script arguments
+
+Here is a complete list of all arguments passed to scripts:
+
+    .../tiwilliam/hookit
+        --owner=tiwilliam
+        --branch=master
+        --repository=hookit
+        --commit=a3a707700d845919178c72cd266ffc28d882c380
+
 ## Installation
 
 This package is availiable on Python Package Index
