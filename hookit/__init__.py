@@ -32,8 +32,6 @@ logger = logging.getLogger('hookit')
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-VERSION = '0.9.0'
-
 WHITELIST = GitHub().meta().get('hooks', [])
 
 
@@ -126,7 +124,6 @@ def run():
         logger.error('Binding port must be integer')
         sys.exit(1)
 
-    logger.info('Starting hookit %s', VERSION)
     logger.info('Now listening for webhooks on http://%s:%s...' % (host, port))
 
     try:
