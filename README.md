@@ -2,7 +2,7 @@
 
     Usage:
       hookit [--scripts=<dir>] [--listen=<address>] [--port=<port>]
-    
+
     Options:
       -v --version        Show version
       --scripts=<dir>     Where to look for hook scripts [default: .]
@@ -11,19 +11,28 @@
 
 ## Execute scripts in any language
 
-On webhook the server will try to execute a script located at `<scripts>/<repository>/<branch>`.
-The script will run with arguments containing repository, branch and commit hash. An example script may look like:
+On recieving a webhook the server will try to execute a script located
+at  `.../<owner>/<repository>/<branch>`, hookit will pass some arguments
+with useful data. An example script may look like:
 
     #!/usr/bin/env python
 
-    import sys
+    import argparse
     from subprocess import call
 
-    branch = sys.argv[1]
-    repo = sys.argv[2]
+    parser = argparse.ArgumentParser(description='Hook some hooks.')
+    parser.add_argument('--repository')
+    parser.add_argument('--branch')
+    args = parser.parse_args()
 
-    message = 'You have changes in the %s branch of %s' % (branch, repo)
+    message = 'You have changes in the %s branch of %s' % (args.branch, args.repository)
     call(['/usr/bin/say', message])
+
+## Catch all events
+
+It's also possible to listen for all push events in an organisation
+or repository. Just place your hook script at the level you are
+interested of (eg. `.../<owner>/<repository>` or `.../<owner>`).
 
 ## Installation
 
@@ -33,6 +42,8 @@ This package is availiable on Python Package Index
 
 ## Security
 
-The server will only accept requests from GitHub's trusted servers and run scripts from an jailed directory.
+The server will only accept requests from GitHub's trusted servers and
+run scripts from an jailed directory.
 
-GitHub's trusted servers will be updated on start using their [meta endpoint](https://api.github.com/meta).
+GitHub's trusted servers will be updated on start using
+their [meta endpoint](https://api.github.com/meta).
