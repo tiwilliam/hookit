@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='hookit',
-    version='0.9.1',
+    version='0.9.2',
     packages=['hookit'],
     license='MIT License',
     keywords='git github webhook webhooks',
@@ -14,6 +14,6 @@ setup(
     author_email='william@defunct.cc',
     url='https://github.com/tiwilliam/hookit',
     entry_points={
-        'console_scripts': ['hookit = hookit:run'],
+        'console_scripts': ['hookit = hookit.server:run'],
     }
 )
