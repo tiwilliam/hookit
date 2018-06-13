@@ -15,7 +15,7 @@ import json
 import socket
 import logging
 import os.path
-from subprocess import call
+from subprocess import Popen
 
 from docopt import docopt
 from github3 import GitHub
@@ -107,7 +107,7 @@ def hook_trigger(payload):
             continue
 
         logger.debug('Executing %s' % trigger)
-        call([trigger] + [
+        Popen([trigger] + [
             '--owner=%s' % owner,
             '--branch=%s' % branch,
             '--repository=%s' % repository,
